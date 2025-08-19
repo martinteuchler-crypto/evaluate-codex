@@ -46,6 +46,7 @@ class SolarSystemGUI:
         self.planet_items: dict[str, int] = {}
         self.selection_a: str | None = None
         self.selection_b: str | None = None
+        self.zoom = 1.0
 
         names = [p.name for p in PLANETS]
         self.var_a = tk.StringVar(value=names[2])
@@ -62,6 +63,13 @@ class SolarSystemGUI:
         self.info.grid(row=2, column=0, columnspan=4, sticky="ew")
 
         self.canvas.bind("<Button-1>", self.on_click)
+        self.root.bind_all("<MouseWheel>", self.on_mousewheel)
+        self.root.bind_all("<Button-4>", self.on_mousewheel)
+        self.root.bind_all("<Button-5>", self.on_mousewheel)
+        self.root.bind_all("<KeyPress-plus>", self.on_key_zoom)
+        self.root.bind_all("<KeyPress-minus>", self.on_key_zoom)
+        self.root.bind_all("<KeyPress-KP_Add>", self.on_key_zoom)
+        self.root.bind_all("<KeyPress-KP_Subtract>", self.on_key_zoom)
 
         self.draw_system()
         self.update_selection("A")
@@ -74,8 +82,8 @@ class SolarSystemGUI:
     def draw_system(self) -> None:
         self.canvas.delete("all")
         width = int(self.canvas["width"])
-        height = int(self.canvas["height"])
-        scale = width / (2 * PLANETS[-1].orbit_au * 1.1)
+        base_scale = width / (2 * PLANETS[-1].orbit_au * 1.1)
+        scale = base_scale * self.zoom
         cx = cy = width / 2
 
         # Draw orbits and planets
@@ -139,13 +147,31 @@ class SolarSystemGUI:
         bx, by = self.planet_positions[name_b]
         # Convert from canvas coordinates back to AU
         width = int(self.canvas["width"])
-        scale = width / (2 * PLANETS[-1].orbit_au * 1.1)
+        base_scale = width / (2 * PLANETS[-1].orbit_au * 1.1)
+        scale = base_scale * self.zoom
         ax = (ax - width / 2) / scale
         ay = (ay - width / 2) / scale
         bx = (bx - width / 2) / scale
         by = (by - width / 2) / scale
         dist_au = math.hypot(ax - bx, ay - by)
         return dist_au * AU_KM
+
+    def adjust_zoom(self, factor: float) -> None:
+        self.zoom *= factor
+        self.draw_system()
+        self.highlight_selection()
+
+    def on_mousewheel(self, event: tk.Event) -> None:
+        if getattr(event, "delta", 0) > 0 or getattr(event, "num", None) == 4:
+            self.adjust_zoom(1.1)
+        else:
+            self.adjust_zoom(1 / 1.1)
+
+    def on_key_zoom(self, event: tk.Event) -> None:
+        if event.keysym in {"plus", "KP_Add"}:
+            self.adjust_zoom(1.1)
+        elif event.keysym in {"minus", "KP_Subtract"}:
+            self.adjust_zoom(1 / 1.1)
 
     def run(self) -> None:
         self.root.mainloop()
