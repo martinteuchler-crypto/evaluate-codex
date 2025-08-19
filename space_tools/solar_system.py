@@ -5,6 +5,10 @@ from datetime import datetime
 
 C_KM_PER_S = 299_792.458  # Speed of light in km/s
 AU_KM = 149_597_870  # Astronomical unit in kilometers
+C_M_PER_S = C_KM_PER_S * 1000
+AU_M = AU_KM * 1000
+# Standard gravitational parameter GM of the Sun in m^3/s^2
+MU_SUN = 1.32712440018e20
 
 
 @dataclass
@@ -32,6 +36,22 @@ PLANETS = [
     Planet("Uranus", 19.20, 30687, "light blue"),
     Planet("Neptune", 30.05, 60190, "dark blue"),
 ]
+
+
+def shapiro_delay(r1_m: float, r2_m: float, R_m: float) -> float:
+    """Return the Shapiro delay for a signal in seconds.
+
+    Parameters
+    ----------
+    r1_m, r2_m : float
+        Distances from the Sun to the two bodies in meters.
+    R_m : float
+        Euclidean separation between the bodies in meters.
+    """
+    denom = r1_m + r2_m - R_m
+    if denom <= 0:
+        return 0.0
+    return (2 * MU_SUN / C_M_PER_S**3) * math.log((r1_m + r2_m + R_m) / denom)
 
 
 class SolarSystemGUI:
@@ -105,20 +125,20 @@ class SolarSystemGUI:
         width = int(self.canvas["width"])
         base_scale = width / (2 * PLANETS[-1].orbit_au * 1.1)
         scale = base_scale * self.zoom
-        cx = width / 2 + self.pan_x
-        cy = width / 2 + self.pan_y
-        self.draw_sun_and_distortion(cx, cy)
+        self.cx = width / 2 + self.pan_x
+        self.cy = width / 2 + self.pan_y
+        self.draw_sun_and_distortion(self.cx, self.cy)
 
         # Draw orbits and planets
         days = self.days_since_epoch()
         for planet in PLANETS:
             r = planet.orbit_au * scale
             # orbit
-            self.canvas.create_oval(cx - r, cy - r, cx + r, cy + r, outline="white")
+            self.canvas.create_oval(self.cx - r, self.cy - r, self.cx + r, self.cy + r, outline="white")
             # position
             x_au, y_au = planet.position(days)
-            x = cx + x_au * scale
-            y = cy + y_au * scale
+            x = self.cx + x_au * scale
+            y = self.cy + y_au * scale
             item = self.canvas.create_oval(x - 6, y - 6, x + 6, y + 6, fill=planet.color, outline="")
             self.canvas.create_text(x + 8, y, text=planet.name, anchor="w", fill="white")
             self.planet_positions[planet.name] = (x, y)
@@ -152,14 +172,39 @@ class SolarSystemGUI:
 
     def draw_connection(self) -> None:
         self.canvas.delete("path")
+        self.canvas.delete("path_shapiro")
         if self.selection_a and self.selection_b and self.selection_a != self.selection_b:
             ax, ay = self.planet_positions[self.selection_a]
             bx, by = self.planet_positions[self.selection_b]
+            # Straight line (geometric path)
             self.canvas.create_line(ax, ay, bx, by, fill="cyan", tags="path")
-            distance = self.distance_between(self.selection_a, self.selection_b)
-            time_sec = distance / C_KM_PER_S
+
+            # Curved line to illustrate Shapiro bending
+            mid_x = (ax + bx) / 2
+            mid_y = (ay + by) / 2
+            bend = 0.2 * self.distortion_strength
+            ctrl_x = mid_x + (self.cx - mid_x) * bend
+            ctrl_y = mid_y + (self.cy - mid_y) * bend
+            self.canvas.create_line(
+                ax,
+                ay,
+                ctrl_x,
+                ctrl_y,
+                bx,
+                by,
+                smooth=True,
+                fill="magenta",
+                tags="path_shapiro",
+            )
+
+            geom_km, proper_km, geom_s, proper_s = self.light_path(
+                self.selection_a, self.selection_b
+            )
             self.info.config(
-                text=f"Distance: {distance:,.0f} km  |  Light travel time: {time_sec/60:.2f} min"
+                text=(
+                    f"Geom: {geom_km:,.0f} km ({geom_s/60:.2f} min)  |  "
+                    f"Proper: {proper_km:,.0f} km ({proper_s/60:.2f} min)"
+                )
             )
         else:
             self.info.config(text="Select planets to view light path")
@@ -171,12 +216,40 @@ class SolarSystemGUI:
         width = int(self.canvas["width"])
         base_scale = width / (2 * PLANETS[-1].orbit_au * 1.1)
         scale = base_scale * self.zoom
-        ax = (ax - width / 2 - self.pan_x) / scale
-        ay = (ay - width / 2 - self.pan_y) / scale
-        bx = (bx - width / 2 - self.pan_x) / scale
-        by = (by - width / 2 - self.pan_y) / scale
+        ax = (ax - self.cx) / scale
+        ay = (ay - self.cy) / scale
+        bx = (bx - self.cx) / scale
+        by = (by - self.cy) / scale
         dist_au = math.hypot(ax - bx, ay - by)
         return dist_au * AU_KM
+
+    def light_path(self, name_a: str, name_b: str) -> tuple[float, float, float, float]:
+        """Return geometric and Shapiro-corrected light path lengths and times.
+
+        Returns
+        -------
+        tuple
+            ``(geom_km, proper_km, geom_s, proper_s)``
+        """
+        ax, ay = self.planet_positions[name_a]
+        bx, by = self.planet_positions[name_b]
+        width = int(self.canvas["width"])
+        base_scale = width / (2 * PLANETS[-1].orbit_au * 1.1)
+        scale = base_scale * self.zoom
+        ax_au = (ax - self.cx) / scale
+        ay_au = (ay - self.cy) / scale
+        bx_au = (bx - self.cx) / scale
+        by_au = (by - self.cy) / scale
+        r1_m = math.hypot(ax_au, ay_au) * AU_M
+        r2_m = math.hypot(bx_au, by_au) * AU_M
+        R_m = math.hypot(ax_au - bx_au, ay_au - by_au) * AU_M
+        delay = shapiro_delay(r1_m, r2_m, R_m)
+        delay *= 1 + self.distortion_strength
+        geom_m = R_m
+        proper_m = R_m + C_M_PER_S * delay
+        geom_s = geom_m / C_M_PER_S
+        proper_s = proper_m / C_M_PER_S
+        return geom_m / 1000, proper_m / 1000, geom_s, proper_s
 
     def adjust_zoom(self, factor: float) -> None:
         self.zoom *= factor
