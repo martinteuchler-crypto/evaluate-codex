@@ -7,6 +7,8 @@ This project provides a small collection of physics and astronomy utilities.
 - `contracted_length` – compute the Lorentz contracted length for an object moving at relativistic speeds.
 - `light_time_earth_mars` – estimate light travel time between Earth and Mars including the Sun's gravitational delay.
 - `SolarSystemGUI` – interactive Tkinter visualization of the solar system with light-path calculations between planets.
+  The GUI now shows both geometric and Shapiro-delay–corrected light paths and allows
+  magnifying the effect with a slider.
 
 ## Installation
 
