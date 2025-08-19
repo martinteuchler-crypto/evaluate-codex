@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from light_time import light_time_earth_mars
+from space_tools import light_time_earth_mars
 
 
 def test_light_time_jan_1_2024():
