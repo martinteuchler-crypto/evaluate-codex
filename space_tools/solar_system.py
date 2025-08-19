@@ -47,6 +47,10 @@ class SolarSystemGUI:
         self.selection_a: str | None = None
         self.selection_b: str | None = None
         self.zoom = 1.0
+        self.pan_x = 0
+        self.pan_y = 0
+        self._last_drag_x = 0
+        self._last_drag_y = 0
 
         names = [p.name for p in PLANETS]
         self.var_a = tk.StringVar(value=names[2])
@@ -63,6 +67,8 @@ class SolarSystemGUI:
         self.info.grid(row=2, column=0, columnspan=4, sticky="ew")
 
         self.canvas.bind("<Button-1>", self.on_click)
+        self.canvas.bind("<ButtonPress-2>", self.on_pan_start)
+        self.canvas.bind("<B2-Motion>", self.on_pan_move)
         self.root.bind_all("<MouseWheel>", self.on_mousewheel)
         self.root.bind_all("<Button-4>", self.on_mousewheel)
         self.root.bind_all("<Button-5>", self.on_mousewheel)
@@ -81,10 +87,13 @@ class SolarSystemGUI:
 
     def draw_system(self) -> None:
         self.canvas.delete("all")
+        self.planet_positions.clear()
+        self.planet_items.clear()
         width = int(self.canvas["width"])
         base_scale = width / (2 * PLANETS[-1].orbit_au * 1.1)
         scale = base_scale * self.zoom
-        cx = cy = width / 2
+        cx = width / 2 + self.pan_x
+        cy = width / 2 + self.pan_y
 
         # Draw orbits and planets
         days = self.days_since_epoch()
@@ -149,10 +158,10 @@ class SolarSystemGUI:
         width = int(self.canvas["width"])
         base_scale = width / (2 * PLANETS[-1].orbit_au * 1.1)
         scale = base_scale * self.zoom
-        ax = (ax - width / 2) / scale
-        ay = (ay - width / 2) / scale
-        bx = (bx - width / 2) / scale
-        by = (by - width / 2) / scale
+        ax = (ax - width / 2 - self.pan_x) / scale
+        ay = (ay - width / 2 - self.pan_y) / scale
+        bx = (bx - width / 2 - self.pan_x) / scale
+        by = (by - width / 2 - self.pan_y) / scale
         dist_au = math.hypot(ax - bx, ay - by)
         return dist_au * AU_KM
 
@@ -172,6 +181,20 @@ class SolarSystemGUI:
             self.adjust_zoom(1.1)
         elif event.keysym in {"minus", "KP_Subtract"}:
             self.adjust_zoom(1 / 1.1)
+
+    def on_pan_start(self, event: tk.Event) -> None:
+        self._last_drag_x = event.x
+        self._last_drag_y = event.y
+
+    def on_pan_move(self, event: tk.Event) -> None:
+        dx = event.x - self._last_drag_x
+        dy = event.y - self._last_drag_y
+        self._last_drag_x = event.x
+        self._last_drag_y = event.y
+        self.pan_x += dx
+        self.pan_y += dy
+        self.draw_system()
+        self.highlight_selection()
 
     def run(self) -> None:
         self.root.mainloop()
