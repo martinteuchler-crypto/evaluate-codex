@@ -66,7 +66,8 @@ class SolarSystemGUI:
         self.info = tk.Label(self.root, text="Select planets to view light path", fg="white", bg="black")
         self.info.grid(row=2, column=0, columnspan=4, sticky="ew")
 
-        self.canvas.bind("<Button-1>", self.on_click)
+        self.canvas.bind("<Button-1>", lambda e: self.on_click(e, "A"))
+        self.canvas.bind("<Button-3>", lambda e: self.on_click(e, "B"))
         self.canvas.bind("<ButtonPress-2>", self.on_pan_start)
         self.canvas.bind("<B2-Motion>", self.on_pan_move)
         self.root.bind_all("<MouseWheel>", self.on_mousewheel)
@@ -76,6 +77,18 @@ class SolarSystemGUI:
         self.root.bind_all("<KeyPress-minus>", self.on_key_zoom)
         self.root.bind_all("<KeyPress-KP_Add>", self.on_key_zoom)
         self.root.bind_all("<KeyPress-KP_Subtract>", self.on_key_zoom)
+
+        self.distortion_var = tk.IntVar(value=1)
+        tk.Scale(
+            self.root,
+            from_=1,
+            to=10,
+            orient="horizontal",
+            label="Distortion",
+            variable=self.distortion_var,
+            command=lambda _=None: self.update_distortion(),
+        ).grid(row=3, column=0, columnspan=4, sticky="ew")
+        self.distortion_strength = 0.0
 
         self.draw_system()
         self.update_selection("A")
@@ -94,6 +107,7 @@ class SolarSystemGUI:
         scale = base_scale * self.zoom
         cx = width / 2 + self.pan_x
         cy = width / 2 + self.pan_y
+        self.draw_sun_and_distortion(cx, cy)
 
         # Draw orbits and planets
         days = self.days_since_epoch()
@@ -113,12 +127,11 @@ class SolarSystemGUI:
         # draw selection line if applicable
         self.draw_connection()
 
-    def on_click(self, event: tk.Event) -> None:
+    def on_click(self, event: tk.Event, which: str) -> None:
         for name, item in self.planet_items.items():
-            coords = self.canvas.coords(item)
-            x0, y0, x1, y1 = coords
+            x0, y0, x1, y1 = self.canvas.coords(item)
             if x0 <= event.x <= x1 and y0 <= event.y <= y1:
-                if self.selection_a is None or self.selection_a == name:
+                if which == "A":
                     self.var_a.set(name)
                 else:
                     self.var_b.set(name)
@@ -195,6 +208,27 @@ class SolarSystemGUI:
         self.pan_y += dy
         self.draw_system()
         self.highlight_selection()
+
+    def update_distortion(self) -> None:
+        value = int(self.distortion_var.get())
+        self.distortion_strength = (value - 1) * (10 / 9)
+        self.draw_system()
+        self.highlight_selection()
+
+    def draw_sun_and_distortion(self, cx: float, cy: float) -> None:
+        sun_radius = 10
+        self.canvas.create_oval(
+            cx - sun_radius,
+            cy - sun_radius,
+            cx + sun_radius,
+            cy + sun_radius,
+            fill="yellow",
+            outline="",
+        )
+        strength = self.distortion_strength
+        for i in range(1, 6):
+            r = sun_radius + i * 15 * (1 + strength)
+            self.canvas.create_oval(cx - r, cy - r, cx + r, cy + r, outline="gold", tags="distortion")
 
     def run(self) -> None:
         self.root.mainloop()
