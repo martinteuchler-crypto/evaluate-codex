@@ -25,10 +25,24 @@ print(contracted_length(10.0, 0.5))
 
 # Light travel time between Earth and Mars on 1 January 2024
 print(light_time_earth_mars(date(2024, 1, 1)))
-
-# Launch the solar system GUI
-# SolarSystemGUI().run()
 ```
+
+### Launching the GUI
+
+You can launch the interactive solar system visualization in two ways:
+
+1. **From a Python session**
+
+   ```python
+   from space_tools import SolarSystemGUI
+   SolarSystemGUI().run()
+   ```
+
+2. **From the command line**
+
+   ```bash
+   python -m space_tools.solar_system
+   ```
 
 ## Tests
 
