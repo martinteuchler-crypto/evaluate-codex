@@ -244,7 +244,7 @@ class SolarSystemGUI:
         r2_m = math.hypot(bx_au, by_au) * AU_M
         R_m = math.hypot(ax_au - bx_au, ay_au - by_au) * AU_M
         delay = shapiro_delay(r1_m, r2_m, R_m)
-        delay *= 1 + self.distortion_strength
+        delay *= math.exp(self.distortion_strength)
         geom_m = R_m
         proper_m = R_m + C_M_PER_S * delay
         geom_s = geom_m / C_M_PER_S
@@ -284,7 +284,7 @@ class SolarSystemGUI:
 
     def update_distortion(self) -> None:
         value = int(self.distortion_var.get())
-        self.distortion_strength = (value - 1) * (10 / 9)
+        self.distortion_strength = value - 1
         self.draw_system()
         self.highlight_selection()
 
@@ -298,10 +298,6 @@ class SolarSystemGUI:
             fill="yellow",
             outline="",
         )
-        strength = self.distortion_strength
-        for i in range(1, 6):
-            r = sun_radius + i * 15 * (1 + strength)
-            self.canvas.create_oval(cx - r, cy - r, cx + r, cy + r, outline="gold", tags="distortion")
 
     def run(self) -> None:
         self.root.mainloop()
