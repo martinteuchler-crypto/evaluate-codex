@@ -17,6 +17,8 @@ client, and infrastructure configuration for Docker deployment.
 
 ## Development
 
+Requires **Node.js 18+**.
+
 ```bash
 # install dependencies
 npm install --workspaces
