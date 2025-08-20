@@ -37,9 +37,9 @@ npm run dev --workspace=@three-chess/client
 
 ```bash
 cd infra
-# build and run
-docker-compose build
-docker-compose up -d
+# build and run (Docker Compose v2)
+docker compose build
+docker compose up -d
 ```
 
 Server listens on `3000`, client on `80`.
