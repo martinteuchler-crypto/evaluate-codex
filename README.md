@@ -7,8 +7,8 @@ This project provides a small collection of physics and astronomy utilities.
 - `contracted_length` – compute the Lorentz contracted length for an object moving at relativistic speeds.
 - `light_time_earth_mars` – estimate light travel time between Earth and Mars including the Sun's gravitational delay.
 - `SolarSystemGUI` – interactive Tkinter visualization of the solar system with light-path calculations between planets.
-  The GUI now shows both geometric and Shapiro-delay–corrected light paths and allows
-  magnifying the effect with a slider.
+  Pick any two planets to see both the straight geometric light path and the Shapiro-delay–corrected path.  The canvas supports
+  mouse or keyboard controls to pan and zoom, and a *Distortion* slider exaggerates the relativistic bending for clarity.
 
 ## Installation
 
@@ -45,6 +45,14 @@ You can launch the interactive solar system visualization in two ways:
    ```bash
    python -m space_tools.solar_system
    ```
+
+### Using the GUI
+
+- **Select planets:** choose Planet A and B from the drop-down menus or left/right click planets on the canvas.
+- **Pan:** drag with the middle mouse button.
+- **Zoom:** scroll the mouse wheel or press `+` / `-` (`KP_Add` / `KP_Subtract`).
+- **Distortion slider:** exaggerate gravitational bending to highlight the Shapiro delay.
+- **Info banner:** shows geometric vs. corrected path lengths and light-travel times for the selected pair.
 
 ## Tests
 
