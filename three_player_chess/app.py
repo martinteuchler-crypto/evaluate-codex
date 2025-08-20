@@ -85,3 +85,13 @@ def create_app() -> Flask:
 
 
 __all__ = ["create_app", "generate_qr", "GameState", "state"]
+
+
+def main() -> None:
+    """Run a development server for the three player chess app."""
+
+    create_app().run(debug=True)
+
+
+if __name__ == "__main__":  # pragma: no cover - manual invocation
+    main()
