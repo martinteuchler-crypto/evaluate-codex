@@ -4,11 +4,16 @@ import { useStore } from '../store';
 
 const TournamentView: React.FC = () => {
   const { id } = useParams();
-  const { tournaments, players, recordTournamentMatch } = useStore();
+  const { tournaments, players, teams, recordTournamentMatch } = useStore();
   const tournament = tournaments.find((t) => t.id === id);
   if (!tournament) return <div className="p-4">Tournament not found</div>;
 
-  const getName = (pid?: string) => players.find((p) => p.id === pid)?.name || '';
+  const getName = (pid?: string) => {
+    if (!pid) return '';
+    return tournament.mode === 'singles'
+      ? players.find((p) => p.id === pid)?.name || ''
+      : teams.find((t) => t.id === pid)?.name || '';
+  };
   const pending = tournament.bracket.find((n) => n.homeId && n.awayId && !n.completed);
   const championNode = tournament.bracket.find((n) => !n.downstream);
 
@@ -21,8 +26,18 @@ const TournamentView: React.FC = () => {
             {getName(pending.homeId)} vs {getName(pending.awayId)}
           </p>
           <div className="space-x-2">
-            <button className="bg-green-500 text-white px-2" onClick={() => recordTournamentMatch(tournament.id, pending.id, 'home')}>Home wins</button>
-            <button className="bg-blue-500 text-white px-2" onClick={() => recordTournamentMatch(tournament.id, pending.id, 'away')}>Away wins</button>
+            <button
+              className="bg-green-500 text-white px-2"
+              onClick={() => recordTournamentMatch(tournament.id, pending.id, 'home')}
+            >
+              Home wins
+            </button>
+            <button
+              className="bg-blue-500 text-white px-2"
+              onClick={() => recordTournamentMatch(tournament.id, pending.id, 'away')}
+            >
+              Away wins
+            </button>
           </div>
         </div>
       ) : (

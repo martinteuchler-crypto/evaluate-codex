@@ -6,8 +6,8 @@ tournaments and leagues. Built with React, Vite and TypeScript.
 ### Features
 
 - Manage players: add, edit, delete and track Elo rating
-- Create teams from players and adjust membership
-- Run single-elimination tournaments and enter match winners
+- Create teams of two players and adjust membership
+- Run single-elimination tournaments for singles or doubles and enter match winners
 - Record league matches with automatic Elo updates
 
 ## Quick start (development)

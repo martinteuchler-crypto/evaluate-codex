@@ -10,7 +10,7 @@ const Matches: React.FC = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!home || !away || home === away) return;
-    await recordMatch(home, away, winner);
+    await recordMatch([home], [away], winner, 'singles');
     setHome('');
     setAway('');
   };

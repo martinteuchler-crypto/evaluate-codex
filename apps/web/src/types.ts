@@ -46,6 +46,7 @@ export interface BracketNode {
 export interface Tournament {
   id: string;
   name: string;
+  mode: 'singles' | 'doubles';
   bracket: BracketNode[];
   createdAt: Date;
 }

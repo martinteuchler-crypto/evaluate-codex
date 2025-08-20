@@ -5,8 +5,10 @@ const Teams: React.FC = () => {
   const { teams, players, addTeam, updateTeam, deleteTeam } = useStore();
   const [name, setName] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
+  const [error, setError] = useState('');
   const [editing, setEditing] = useState<string | null>(null);
   const [editSelected, setEditSelected] = useState<string[]>([]);
+  const [editError, setEditError] = useState('');
 
   const toggle = (id: string, list: string[], setList: (v: string[]) => void) => {
     setList(list.includes(id) ? list.filter((p) => p !== id) : [...list, id]);
@@ -15,19 +17,29 @@ const Teams: React.FC = () => {
   const onAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    if (selected.length !== 2) {
+      setError('Select exactly two players');
+      return;
+    }
     await addTeam(name.trim(), selected);
     setName('');
     setSelected([]);
+    setError('');
   };
 
   const startEdit = (teamId: string, members: string[]) => {
     setEditing(teamId);
     setEditSelected(members);
+    setEditError('');
   };
 
   const onEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editing) {
+      if (editSelected.length !== 2) {
+        setEditError('Select exactly two players');
+        return;
+      }
       await updateTeam(editing, editSelected);
       setEditing(null);
     }
@@ -36,41 +48,74 @@ const Teams: React.FC = () => {
   return (
     <div className="p-4 space-y-4">
       <h2 className="text-xl font-bold">Teams</h2>
-      <form onSubmit={onAdd} className="space-y-2">
-        <input className="border p-1 w-full" value={name} onChange={(e) => setName(e.target.value)} placeholder="Team name" />
+      <form onSubmit={onAdd} className="space-y-2 bg-white p-3 rounded shadow">
+        <input
+          className="border p-2 w-full rounded"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Team name"
+        />
         <div className="flex flex-wrap gap-2">
           {players.map((p) => (
             <label key={p.id} className="flex items-center space-x-1">
-              <input type="checkbox" checked={selected.includes(p.id)} onChange={() => toggle(p.id, selected, setSelected)} />
+              <input
+                type="checkbox"
+                checked={selected.includes(p.id)}
+                onChange={() => toggle(p.id, selected, setSelected)}
+              />
               <span>{p.name}</span>
             </label>
           ))}
         </div>
-        <button type="submit" className="bg-blue-500 text-white px-2">Create</button>
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-3 py-1 rounded disabled:bg-gray-300"
+          disabled={selected.length !== 2 || !name.trim()}
+        >
+          Create
+        </button>
       </form>
       <ul className="space-y-2">
         {teams.map((t) => (
-          <li key={t.id} className="border p-2">
+          <li key={t.id} className="border p-3 rounded bg-white shadow">
             {editing === t.id ? (
               <form onSubmit={onEdit} className="space-y-2">
                 <div className="flex flex-wrap gap-2">
                   {players.map((p) => (
                     <label key={p.id} className="flex items-center space-x-1">
-                      <input type="checkbox" checked={editSelected.includes(p.id)} onChange={() => toggle(p.id, editSelected, setEditSelected)} />
+                      <input
+                        type="checkbox"
+                        checked={editSelected.includes(p.id)}
+                        onChange={() => toggle(p.id, editSelected, setEditSelected)}
+                      />
                       <span>{p.name}</span>
                     </label>
                   ))}
                 </div>
-                <button type="submit" className="bg-green-500 text-white px-2">Save</button>
-                <button type="button" onClick={() => setEditing(null)} className="px-2">Cancel</button>
+                {editError && <p className="text-red-600 text-sm">{editError}</p>}
+                <button
+                  type="submit"
+                  className="bg-green-500 text-white px-3 py-1 rounded disabled:bg-gray-300"
+                  disabled={editSelected.length !== 2}
+                >
+                  Save
+                </button>
+                <button type="button" onClick={() => setEditing(null)} className="px-2">
+                  Cancel
+                </button>
               </form>
             ) : (
               <>
                 <div className="flex justify-between items-center">
                   <span className="font-semibold">{t.name}</span>
                   <div className="space-x-2">
-                    <button onClick={() => startEdit(t.id, t.playerIds)} className="text-blue-600">Edit</button>
-                    <button onClick={() => deleteTeam(t.id)} className="text-red-600">Delete</button>
+                    <button onClick={() => startEdit(t.id, t.playerIds)} className="text-blue-600">
+                      Edit
+                    </button>
+                    <button onClick={() => deleteTeam(t.id)} className="text-red-600">
+                      Delete
+                    </button>
                   </div>
                 </div>
                 <ul className="pl-4 list-disc">
