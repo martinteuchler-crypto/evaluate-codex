@@ -8,6 +8,8 @@ This project provides a small collection of physics and astronomy utilities.
 - `light_time_earth_mars` – estimate light travel time between Earth and Mars including the Sun's gravitational delay.
 - Web-based solar system visualization – interactive browser view of the solar system
   with geometric and Shapiro-delay–corrected light-path calculations.
+- `three_player_chess` – lightweight web app for a three-player chess game with QR-code
+  based player registration.
 
 ## Installation
 
@@ -30,10 +32,14 @@ print(light_time_earth_mars(date(2024, 1, 1)))
 
 ### Launching the web app
 
-Run the Flask application and open the resulting URL in a browser:
+Run one of the provided Flask applications and open the resulting URL in a browser:
 
 ```bash
+# Solar system visualisation
 python -m space_tools.solar_system
+
+# Three player chess game
+python -m three_player_chess.app
 ```
 
 ## Tests

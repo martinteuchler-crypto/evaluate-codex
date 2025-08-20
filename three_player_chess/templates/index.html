@@ -1,0 +1,13 @@
+<!doctype html>
+<title>Three Player Chess</title>
+<h1>Three Player Chess</h1>
+<p>Scan a QR code to join the game:</p>
+<ul>
+  {% for color, img in qrs.items() %}
+    <li>
+      {{ color.title() }}
+      <img src="data:image/png;base64,{{ img }}" alt="QR for {{ color }}" />
+      {% if color in state.players %}({{ state.players[color] }} joined){% endif %}
+    </li>
+  {% endfor %}
+</ul>
