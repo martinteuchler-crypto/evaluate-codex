@@ -1,0 +1,6 @@
+<!doctype html>
+<title>Playing {{ color.title() }}</title>
+<h1>Hello {{ name or 'Player' }} ({{ color.title() }})</h1>
+<p>Current turn: {{ state.current_turn }}</p>
+<pre>{% for row in state.board %}{{ ' '.join(row) }}
+{% endfor %}</pre>
