@@ -1,0 +1,14 @@
+{
+  "name": "three-player-chess",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "e2e"
+  ],
+  "scripts": {
+    "test": "npm --workspaces test",
+    "build": "npm --workspaces run build"
+  }
+}
