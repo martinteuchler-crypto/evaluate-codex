@@ -1,0 +1,20 @@
+{
+  "name": "tt-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm -r --filter @app/web dev",
+    "build": "pnpm -r build",
+    "test": "vitest run"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vitest": "^1.6.1",
+    "zod": "^4.0.17"
+  }
+}

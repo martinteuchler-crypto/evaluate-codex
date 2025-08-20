@@ -1,28 +1,28 @@
-# TT-Tracker
+# Table Tennis Tracker
 
-Ein einfacher Tischtennis-Tracker für interne Teams.
+Single-user, offline-first web app for managing table tennis players, teams,
+tournaments and leagues. Built with React, Vite and TypeScript.
 
-## Stack
-
-- FastAPI + SQLModel (Postgres)
-- React + TypeScript (Vite)
-- Docker Compose (web, api, db)
-
-## Wie starten
-
-
-Zur Ausführung der Container wird Docker Compose v2 verwendet. Ein `.env`
-mit deaktiviertem BuildKit liegt bei, damit auch Umgebungen ohne das Plugin
-sauber starten.
+## Quick start (development)
 
 ```bash
-docker compose up --build
+pnpm i && pnpm -r dev
 ```
 
-API läuft anschließend auf `http://localhost:8000`, das Frontend auf `http://localhost:5173`.
-
-## Tests
+## Build & preview
 
 ```bash
-pytest
+pnpm -r build && pnpm --filter @app/web preview
 ```
+
+## Backup / restore
+
+Use the Data page in the app to export or import a JSON backup file.
+
+## Tweaks
+
+- **Elo K factor** – edit `packages/core/src/elo.ts`.
+- **Default best-of** – edit `packages/core/src/constants.ts`.
+- **League tie-breakers** – edit `packages/core/src/league.ts`.
+- **Enable optional server** – set `FEATURE_SERVER=true` when running
+  `optional-server` package.
