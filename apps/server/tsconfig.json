@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": "src",
+    "baseUrl": ".",
+    "module": "CommonJS",
     "paths": {
       "@three-chess/engine": ["../../packages/engine/src"]
     }
