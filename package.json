@@ -1,0 +1,9 @@
+{
+  "name": "three-player-chess-mono",
+  "private": true,
+  "version": "0.0.1",
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "build": "pnpm -r build"
+  }
+}
