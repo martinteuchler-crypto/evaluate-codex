@@ -1,43 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { useStore } from './store';
+import Players from './pages/Players';
+import Teams from './pages/Teams';
+import Tournaments from './pages/Tournaments';
+import TournamentView from './pages/Tournament';
+import Matches from './pages/Matches';
 
 const App: React.FC = () => {
-  const { players, load, addPlayer } = useStore();
-  const [name, setName] = useState('');
-
+  const load = useStore((s) => s.load);
   useEffect(() => {
     load();
   }, [load]);
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    await addPlayer(name.trim());
-    setName('');
-  };
-
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-xl font-bold">Table Tennis Tracker</h1>
-      <form onSubmit={onSubmit} className="flex space-x-2">
-        <input
-          className="border p-1 flex-1"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Player name"
-        />
-        <button type="submit" className="bg-blue-500 text-white px-2">
-          Add
-        </button>
-      </form>
-      <ul className="list-disc pl-4">
-        {players.map((p) => (
-          <li key={p.id}>
-            {p.name} (Elo {p.ratingElo})
-          </li>
-        ))}
-      </ul>
-    </div>
+    <BrowserRouter>
+      <nav className="p-2 space-x-4 bg-gray-100">
+        <Link to="/players">Players</Link>
+        <Link to="/teams">Teams</Link>
+        <Link to="/tournaments">Tournaments</Link>
+        <Link to="/matches">Enter Match</Link>
+      </nav>
+      <Routes>
+        <Route path="/players" element={<Players />} />
+        <Route path="/teams" element={<Teams />} />
+        <Route path="/tournaments" element={<Tournaments />} />
+        <Route path="/tournaments/:id" element={<TournamentView />} />
+        <Route path="/matches" element={<Matches />} />
+        <Route path="/" element={<Players />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
