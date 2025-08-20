@@ -3,3 +3,4 @@ sqlmodel
 uvicorn
 httpx
 pytest
+psycopg2-binary
